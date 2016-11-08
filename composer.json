@@ -1,0 +1,17 @@
+{
+  "name": "paycom/paycom-integration-php-template",
+  "description": "Set of classes to easy integration with Paycom payment system",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Umidjons",
+      "email": "almatov.us@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Paycom\\": "Paycom/"
+    }
+  },
+  "require": {}
+}
