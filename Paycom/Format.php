@@ -90,7 +90,11 @@ class Format
      */
     public static function datetime2timestamp($datetime)
     {
-        return strtotime($datetime);
+        if ($datetime) {
+            return strtotime($datetime);
+        }
+
+        return $datetime;
     }
 
 }

@@ -3,8 +3,16 @@ namespace Paycom;
 
 class Order
 {
+    /** Order is available for sell, anyone can buy it. */
+    const STATE_AVAILABLE = 0;
+
+    /** Pay in progress, order must not be changed. */
     const STATE_WAITING_PAY = 1;
+
+    /** Order completed and not available for sell. */
     const STATE_PAY_ACCEPTED = 2;
+
+    /** Order is cancelled. */
     const STATE_CANCELLED = 3;
 
     public $request_id;
@@ -23,7 +31,7 @@ class Order
      */
     public function validate(array $params)
     {
-        // todo: validate amount, if failed return false
+        // todo: Validate amount, if failed throw error
         // for example, check amount is numeric
         if (!is_numeric($params['amount'])) {
             throw new PaycomException(
@@ -33,7 +41,7 @@ class Order
             );
         }
 
-        // todo: validate account, if failed return false
+        // todo: Validate account, if failed throw error
         // assume, we should have order_id
         if (!isset($params['account']['order_id'])) {
             throw new PaycomException(
@@ -49,6 +57,10 @@ class Order
         }
 
         // todo: Check is order available
+
+        // assume, after find() $this will be populated with Order data
+        $this->find($params['account']['order_id']);
+
         // for example, order state before payment should be 'waiting pay'
         if ($this->state != self::STATE_WAITING_PAY) {
             throw new PaycomException(
@@ -62,5 +74,25 @@ class Order
         $this->params = $params;
 
         return true;
+    }
+
+    /**
+     * Find order by given parameters.
+     * @param mixed $params
+     * @return Order|Order[]
+     */
+    public function find($params)
+    {
+        // todo: Implement searching order(s) by given parameters
+    }
+
+    /**
+     * Change order's state to specified one.
+     * @param int $state
+     * @return void
+     */
+    public function changeState($state)
+    {
+        // todo: Implement changing order state (reserve order after create transaction or free order after cancel)
     }
 }
