@@ -238,6 +238,72 @@ class Application
 
     private function CancelTransaction()
     {
+        $transaction = new Transaction();
+
+        // search transaction by id
+        $found = $transaction->find($this->request->params);
+
+        // if transaction not found, send error
+        if (!$found) {
+            $this->response->error(PaycomException::ERROR_TRANSACTION_NOT_FOUND, 'Transaction not found.');
+        }
+
+        switch ($found->state) {
+            // if already cancelled, just send it
+            case Transaction::STATE_CANCELLED:
+            case Transaction::STATE_CANCELLED_AFTER_COMPLETE:
+                $this->response->send([
+                    'transaction' => $found->id,
+                    'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+                    'state' => $found->state
+                ]);
+                break;
+
+            // cancel active transaction
+            case Transaction::STATE_CREATED:
+                // cancel transaction with given reason
+                $found->cancel(1 * $this->request->params['reason']);
+                // after $found->cancel(), cancel_time and state properties populated with data
+
+                // change order state to cancelled
+                $order = new Order($this->request->id);
+                $order->find($this->request->params);
+                $order->changeState(Order::STATE_CANCELLED);
+
+                // send response
+                $this->response->send([
+                    'transaction' => $found->id,
+                    'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+                    'state' => $found->state
+                ]);
+                break;
+
+            case Transaction::STATE_COMPLETED:
+                // find order and check, whether cancelling is possible this order
+                $order = new Order($this->request->id);
+                $order->find($this->request->params);
+                if ($order->allowCancel()) {
+                    // cancel and change state to cancelled
+                    $found->cancel(1 * $this->request->params['reason']);
+                    // after $found->cancel(), cancel_time and state properties populated with data
+
+                    $order->changeState(Order::STATE_CANCELLED);
+
+                    // send response
+                    $this->response->send([
+                        'transaction' => $found->id,
+                        'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+                        'state' => $found->state
+                    ]);
+                } else {
+                    // todo: If cancelling after performing transaction is not possible, then return error -31007
+                    $this->response->error(
+                        PaycomException::ERROR_COULD_NOT_CANCEL,
+                        'Could not cancel transaction. Order is delivered/Service is completed.'
+                    );
+                }
+                break;
+        }
     }
 
     private function ChangePassword()

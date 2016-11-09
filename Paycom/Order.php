@@ -95,4 +95,13 @@ class Order
     {
         // todo: Implement changing order state (reserve order after create transaction or free order after cancel)
     }
+
+    /**
+     * Check, whether order can be cancelled or not.
+     * @return bool true - order is cancellable, otherwise false.
+     */
+    public function allowCancel()
+    {
+        // todo: Implement order cancelling allowance check
+    }
 }

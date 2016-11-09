@@ -76,8 +76,22 @@ class Transaction
     public function cancel($reason)
     {
         // todo: Implement transaction cancelling on data store
+
         // todo: Populate $cancel_time with value
-        // todo: Change $state to cancelled
+        $this->cancel_time = Format::timestamp2datetime(Format::timestamp());
+
+        // todo: Change $state to cancelled (-1 or -2) according to the current state
+        // Scenario: CreateTransaction -> CancelTransaction
+        $this->state = self::STATE_CANCELLED;
+        // Scenario: CreateTransaction -> PerformTransaction -> CancelTransaction
+        if ($this->state == self::STATE_COMPLETED) {
+            $this->state = self::STATE_CANCELLED_AFTER_COMPLETE;
+        }
+
+        // set reason
+        $this->reason = $reason;
+
+        // todo: Update transaction on data store
     }
 
     /**
