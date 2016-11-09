@@ -78,17 +78,17 @@ class Order
 
     /**
      * Find order by given parameters.
-     * @param mixed $params
-     * @return Order|Order[]
+     * @param mixed $params parameters.
+     * @return Order|Order[] found order or array of orders.
      */
     public function find($params)
     {
-        // todo: Implement searching order(s) by given parameters
+        // todo: Implement searching order(s) by given parameters, populate current instance with data
     }
 
     /**
      * Change order's state to specified one.
-     * @param int $state
+     * @param int $state new state of the order
      * @return void
      */
     public function changeState($state)

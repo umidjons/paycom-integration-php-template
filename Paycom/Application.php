@@ -180,6 +180,60 @@ class Application
 
     private function PerformTransaction()
     {
+        $transaction = new Transaction();
+        // search transaction by id
+        $found = $transaction->find($this->request->params);
+
+        // if transaction not found, send error
+        if (!$found) {
+            $this->response->error(PaycomException::ERROR_TRANSACTION_NOT_FOUND, 'Transaction not found.');
+        }
+
+        switch ($found->state) {
+            case Transaction::STATE_CREATED: // handle active transaction
+                if ($found->isExpired()) { // if transaction is expired, then cancel it and send error
+                    $found->cancel(Transaction::REASON_CANCELLED_BY_TIMEOUT);
+                    $this->response->error(
+                        PaycomException::ERROR_COULD_NOT_PERFORM,
+                        'Transaction is expired.'
+                    );
+                } else { // perform active transaction
+                    // todo: Mark order/service as completed
+                    $order = new Order($this->request->id);
+                    $order->find($this->request->params);
+                    $order->changeState(Order::STATE_PAY_ACCEPTED);
+
+                    // todo: Mark transaction as completed
+                    $perform_time = Format::timestamp();
+                    $found->state = Transaction::STATE_COMPLETED;
+                    $found->perform_time = Format::timestamp2datetime($perform_time);
+                    $found->save();
+
+                    $this->response->send([
+                        'transaction' => $found->id,
+                        'perform_time' => $perform_time,
+                        'state' => $found->state
+                    ]);
+                }
+                break;
+
+            case Transaction::STATE_COMPLETED: // handle complete transaction
+                // todo: If transaction completed, just return it
+                $this->response->send([
+                    'transaction' => $found->id,
+                    'perform_time' => Format::datetime2timestamp($found->perform_time),
+                    'state' => $found->state
+                ]);
+                break;
+
+            default:
+                // unknown situation
+                $this->response->error(
+                    PaycomException::ERROR_COULD_NOT_PERFORM,
+                    'Could not perform this operation.'
+                );
+                break;
+        }
     }
 
     private function CancelTransaction()
