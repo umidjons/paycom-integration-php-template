@@ -308,6 +308,25 @@ class Application
 
     private function ChangePassword()
     {
+        // validate, password is specified, otherwise send error
+        if (!isset($this->request->params['password']) || !trim($this->request->params['password'])) {
+            $this->response->error(PaycomException::ERROR_INVALID_ACCOUNT, 'New password not specified.', 'password');
+        }
+
+        // if current password specified as new, then send error
+        if ($this->merchant->config['key'] == $this->request->params['password']) {
+            $this->response->error(PaycomException::ERROR_INSUFFICIENT_PRIVILEGE, 'Insufficient privilege. Incorrect new password.');
+        }
+
+        // todo: Implement saving password into data store or file
+        // example implementation, that saves new password into file specified in the configuration
+        if (!file_put_contents($this->config['keyFile'], $this->request->params['password'])) {
+            $this->response->error(PaycomException::ERROR_INTERNAL_SYSTEM, 'Internal System Error.');
+        }
+
+        // if control is here, then password is saved into data store
+        // send success response
+        $this->response->send(['success' => true]);
     }
 
     private function GetStatement()
