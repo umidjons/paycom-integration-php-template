@@ -1,7 +1,11 @@
 {
-  "name": "paycom/paycom-integration-php-template",
+  "name": "paycom/integration-template",
   "description": "Set of classes to easy integration with Paycom payment system",
-  "type": "project",
+  "type": "library",
+  "keywords": [
+    "paycom",
+    "payme"
+  ],
   "authors": [
     {
       "name": "Umidjons",
@@ -13,5 +17,7 @@
       "Paycom\\": "Paycom/"
     }
   },
-  "require": {}
+  "require": {
+    "php": ">=5.4.0"
+  }
 }
