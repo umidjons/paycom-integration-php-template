@@ -119,4 +119,45 @@ class Transaction
         // Search transaction by product/order id that specified in $params
         // Search transactions for a given period of time that specified in $params
     }
+
+    /**
+     * Gets list of transactions for the given period including period boundaries.
+     * @param int $from_date start of the period in timestamp.
+     * @param int $to_date end of the period in timestamp.
+     * @return array list of found transactions converted into report format for send as a response.
+     */
+    public function report($from_date, $to_date)
+    {
+        $from_date = Format::timestamp2datetime($from_date);
+        $to_date = Format::timestamp2datetime($to_date);
+
+        // container to hold rows/document from data store
+        $rows = [];
+
+        // todo: Retrieve transactions for the specified period from data store
+
+        // assume, here we have $rows variable that is populated with transactions from data store
+        // normalize data for response
+        $result = [];
+        foreach ($rows as $row) {
+            $result[] = [
+                'id' => $row['paycom_transaction_id'], // paycom transaction id
+                'time' => 1 * $row['paycom_time'], // paycom transaction timestamp as is
+                'amount' => 1 * $row['amount'],
+                'account' => [
+                    'order_id' => $row['order_id'], // account parameters to identify client/order/service
+                    // ... additional parameters may be listed here, which are belongs to the account
+                ],
+                'create_time' => Format::datetime2timestamp($row['create_time']),
+                'perform_time' => Format::datetime2timestamp($row['perform_time']),
+                'cancel_time' => Format::datetime2timestamp($row['cancel_time']),
+                'transaction' => $row['id'],
+                'state' => 1 * $row['state'],
+                'reason' => isset($row['reason']) ? 1 * $row['reason'] : null,
+                'receivers' => $row['receivers']
+            ];
+        }
+
+        return $result;
+    }
 }

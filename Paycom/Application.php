@@ -55,7 +55,7 @@ class Application
                 default:
                     $this->response->error(
                         PaycomException::ERROR_METHOD_NOT_FOUND,
-                        'Запрашиваемый метод не найден.',
+                        'Method not found.',
                         $this->request->method
                     );
                     break;
@@ -331,5 +331,26 @@ class Application
 
     private function GetStatement()
     {
+        // validate 'from'
+        if (!isset($this->request->params['from'])) {
+            $this->response->error(PaycomException::ERROR_INVALID_ACCOUNT, 'Incorrect period.', 'from');
+        }
+
+        // validate 'to'
+        if (!isset($this->request->params['to'])) {
+            $this->response->error(PaycomException::ERROR_INVALID_ACCOUNT, 'Incorrect period.', 'to');
+        }
+
+        // validate period
+        if (1 * $this->request->params['from'] >= 1 * $this->request->params['to']) {
+            $this->response->error(PaycomException::ERROR_INVALID_ACCOUNT, 'Incorrect period. (from >= to)', 'from');
+        }
+
+        // get list of transactions for specified period
+        $transaction = new Transaction();
+        $transactions = $transaction->report($this->request->params['from'], $this->request->params['to']);
+
+        // send results back
+        $this->response->send(['transactions' => $transactions]);
     }
 }
