@@ -68,6 +68,7 @@ class Application
     private function CheckPerformTransaction()
     {
         $order = new Order($this->request->id, $this->request->params);
+        $order->find($this->request->params['account']);
 
         // validate parameters
         $order->validate($this->request->params);
@@ -106,13 +107,14 @@ class Application
             'cancel_time' => Format::datetime2timestamp($found->cancel_time),
             'transaction' => $found->id,
             'state' => $found->state,
-            'reason' => isset($found->reason) ? $found->reason : null
+            'reason' => isset($found->reason) ? 1 * $found->reason : null
         ]);
     }
 
     private function CreateTransaction()
     {
         $order = new Order($this->request->id, $this->request->params);
+        $order->find($this->request->params['account']);
 
         // validate parameters
         $order->validate($this->request->params);
@@ -199,8 +201,9 @@ class Application
                     );
                 } else { // perform active transaction
                     // todo: Mark order/service as completed
+                    $params = ['order_id' => $found->order_id];
                     $order = new Order($this->request->id);
-                    $order->find($this->request->params);
+                    $order->find($params);
                     $order->changeState(Order::STATE_PAY_ACCEPTED);
 
                     // todo: Mark transaction as completed

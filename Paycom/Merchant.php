@@ -17,7 +17,7 @@ class Merchant
 
     public function Authorize($request_id)
     {
-        $headers = apache_request_headers();
+        $headers = getallheaders();
 
         if (!$headers || !isset($headers['Authorization']) ||
             !preg_match('/^\s*Basic\s+(\S+)\s*$/i', $headers['Authorization'], $matches) ||
