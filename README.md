@@ -1,5 +1,10 @@
 # Paycom integration template
 
+## Prerequisites
+
+- `PHP 5.4` or greater
+- `PDO` extension
+
 ## Installation via Composer
 
 Change current directory to your project folder and install package:

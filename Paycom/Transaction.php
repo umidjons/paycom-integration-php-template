@@ -1,6 +1,32 @@
 <?php
 namespace Paycom;
 
+/**
+ * Class Transaction
+ *
+ * Example MySQL table might look like to the following:
+ *
+ * CREATE TABLE `transactions` (
+ *   `id` INT(11) NOT NULL AUTO_INCREMENT,
+ *   `paycom_transaction_id` VARCHAR(25) NOT NULL COLLATE 'utf8_unicode_ci',
+ *   `paycom_time` VARCHAR(13) NOT NULL COLLATE 'utf8_unicode_ci',
+ *   `paycom_time_datetime` DATETIME NOT NULL,
+ *   `create_time` DATETIME NOT NULL,
+ *   `perform_time` DATETIME NULL DEFAULT NULL,
+ *   `cancel_time` DATETIME NULL DEFAULT NULL,
+ *   `amount` INT(11) NOT NULL,
+ *   `state` TINYINT(2) NOT NULL,
+ *   `reason` TINYINT(2) NULL DEFAULT NULL,
+ *   `receivers` VARCHAR(500) NULL DEFAULT NULL COMMENT 'JSON array of receivers' COLLATE 'utf8_unicode_ci',
+ *   `order_id` INT(11) NOT NULL,
+ *
+ *   PRIMARY KEY (`id`)
+ * )
+ *   COLLATE='utf8_unicode_ci'
+ *   ENGINE=InnoDB
+ *   AUTO_INCREMENT=1;
+ *
+ */
 class Transaction
 {
     /** Transaction expiration time in milliseconds. 43 200 000 ms = 12 hours. */
@@ -58,6 +84,13 @@ class Transaction
     /** @var string Code to identify the order or service for pay. */
     public $order_id;
 
+    private $db_conn;
+
+    public function __construct(\PDO $db_conn)
+    {
+        $this->db_conn = $db_conn;
+    }
+
     /**
      * Saves current transaction instance in a data store.
      * @return void
@@ -112,8 +145,50 @@ class Transaction
      */
     public function find($params)
     {
+        $is_success = false;
+        $db_stmt = null;
+
         // todo: Implement searching transaction by id, populate current instance with data and return it
+        if (isset($params['id'])) {
+            $sql = 'select * from transactions where paycom_transaction_id=:trx_id';
+            $db_stmt = $this->db_conn->prepare($sql);
+            $is_success = $db_stmt->execute([':trx_id' => $params['id']]);
+        }
+
         // todo: Implement searching transactions by given parameters and return list of transactions
+
+        // if SQL operation succeeded, then try to populate instance properties with values
+        if ($is_success) {
+
+            // fetch one row
+            $row = $db_stmt->fetch();
+
+            // if there is row available, then populate properties with values
+            if ($row) {
+
+                $this->id = $row['id'];
+                $this->paycom_transaction_id = $row['paycom_transaction_id'];
+                $this->paycom_time = 1 * $row['paycom_time'];
+                $this->paycom_time_datetime = $row['paycom_time_datetime'];
+                $this->create_time = $row['create_time'];
+                $this->perform_time = $row['perform_time'];
+                $this->cancel_time = $row['cancel_time'];
+                $this->state = 1 * $row['state'];
+                $this->reason = $row['reason'] ? 1 * $row['reason'] : null;
+                $this->amount = 1 * $row['amount'];
+                $this->order_id = 1 * $row['order_id'];
+
+                // assume, receivers column contains list of receivers in JSON format as string
+                $this->receivers = $row['receivers'] ? json_decode($row['receivers'], true) : null;
+
+                // return populated instance
+                return $this;
+            }
+
+        }
+
+        // transaction not found, return null
+        return null;
 
         // Possible features:
         // Search transaction by product/order id that specified in $params

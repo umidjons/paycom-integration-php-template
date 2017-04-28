@@ -4,4 +4,9 @@ return [
     'merchant_id' => '69240ea9058e46ea7a1b806a',
     'login' => 'Paycom',
     'keyFile' => 'password.paycom',
+    'db' => [
+        'database' => '<database name>',
+        'username' => '<database username>',
+        'password' => '<database password>'
+    ],
 ];

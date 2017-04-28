@@ -8,6 +8,9 @@ class Application
     public $response;
     public $merchant;
 
+    protected $db;
+    protected $db_conn;
+
     /**
      * Application constructor.
      * @param array $config configuration array with <em>merchant_id</em>, <em>login</em>, <em>keyFile</em> keys.
@@ -18,6 +21,8 @@ class Application
         $this->request = new Request();
         $this->response = new Response($this->request);
         $this->merchant = new Merchant($this->config);
+        $this->db = new Database($this->config);
+        $this->db_conn = $this->db->new_connection();
     }
 
     /**
@@ -74,7 +79,7 @@ class Application
         $order->validate($this->request->params);
 
         // todo: Check is there another active or completed transaction for this order
-        $transaction = new Transaction();
+        $transaction = new Transaction($this->db_conn);
         $found = $transaction->find($this->request->params);
         if ($found && ($found->state == Transaction::STATE_CREATED || $found->state == Transaction::STATE_COMPLETED)) {
             $this->response->error(
@@ -91,7 +96,7 @@ class Application
     private function CheckTransaction()
     {
         // todo: Find transaction by id
-        $transaction = new Transaction();
+        $transaction = new Transaction($this->db_conn);
         $found = $transaction->find($this->request->params);
         if (!$found) {
             $this->response->error(
@@ -120,7 +125,7 @@ class Application
         $order->validate($this->request->params);
 
         // todo: Find transaction by id
-        $transaction = new Transaction();
+        $transaction = new Transaction($this->db_conn);
         $found = $transaction->find($this->request->params);
 
         if ($found) {
@@ -182,7 +187,7 @@ class Application
 
     private function PerformTransaction()
     {
-        $transaction = new Transaction();
+        $transaction = new Transaction($this->db_conn);
         // search transaction by id
         $found = $transaction->find($this->request->params);
 
@@ -241,7 +246,7 @@ class Application
 
     private function CancelTransaction()
     {
-        $transaction = new Transaction();
+        $transaction = new Transaction($this->db_conn);
 
         // search transaction by id
         $found = $transaction->find($this->request->params);
@@ -350,7 +355,7 @@ class Application
         }
 
         // get list of transactions for specified period
-        $transaction = new Transaction();
+        $transaction = new Transaction($this->db_conn);
         $transactions = $transaction->report($this->request->params['from'], $this->request->params['to']);
 
         // send results back

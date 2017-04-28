@@ -40,6 +40,9 @@ class Request
         $this->method = isset($this->payload['method']) ? trim($this->payload['method']) : null;
         $this->params = isset($this->payload['params']) ? $this->payload['params'] : [];
         $this->amount = isset($this->payload['params']['amount']) ? 1 * $this->payload['params']['amount'] : null;
+
+        // add request id into params too
+        $this->params['request_id'] = $this->id;
     }
 
     /**
