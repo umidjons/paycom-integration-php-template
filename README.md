@@ -1,3 +1,7 @@
+# NOTE
+
+Please, use the following up to date repo instead https://github.com/PaycomUZ/paycom-integration-php-template
+
 # Paycom integration template
 
 ## Prerequisites
