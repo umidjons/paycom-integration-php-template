@@ -107,9 +107,9 @@ class Application
 
         // todo: Prepare and send found transaction
         $this->response->send([
-            'create_time' => Format::datetime2timestamp($found->create_time),
-            'perform_time' => Format::datetime2timestamp($found->perform_time),
-            'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+            'create_time' => Format::timestamp2milliseconds(Format::datetime2timestamp($found->create_time)),
+            'perform_time' => (Format::datetime2timestamp($found->perform_time) != null) ? Format::timestamp2milliseconds(Format::datetime2timestamp($found->perform_time)) : 0,
+            'cancel_time' => (Format::datetime2timestamp($found->cancel_time) != null) ? Format::timestamp2milliseconds(Format::datetime2timestamp($found->cancel_time)) : 0,
             'transaction' => $found->id,
             'state' => $found->state,
             'reason' => isset($found->reason) ? 1 * $found->reason : null
@@ -177,7 +177,7 @@ class Application
 
             // send response
             $this->response->send([
-                'create_time' => $create_time,
+                'create_time' => Format::timestamp2milliseconds($create_time),
                 'transaction' => $transaction->id,
                 'state' => $transaction->state,
                 'receivers' => null
@@ -219,7 +219,7 @@ class Application
 
                     $this->response->send([
                         'transaction' => $found->id,
-                        'perform_time' => $perform_time,
+                        'perform_time' => Format::timestamp2milliseconds($perform_time),
                         'state' => $found->state
                     ]);
                 }
@@ -229,7 +229,7 @@ class Application
                 // todo: If transaction completed, just return it
                 $this->response->send([
                     'transaction' => $found->id,
-                    'perform_time' => Format::datetime2timestamp($found->perform_time),
+                    'perform_time' => Format::timestamp2milliseconds(Format::datetime2timestamp($found->perform_time)),
                     'state' => $found->state
                 ]);
                 break;
@@ -262,7 +262,7 @@ class Application
             case Transaction::STATE_CANCELLED_AFTER_COMPLETE:
                 $this->response->send([
                     'transaction' => $found->id,
-                    'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+                    'cancel_time' => Format::timestamp2milliseconds(Format::datetime2timestamp($found->cancel_time)),
                     'state' => $found->state
                 ]);
                 break;
@@ -281,7 +281,7 @@ class Application
                 // send response
                 $this->response->send([
                     'transaction' => $found->id,
-                    'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+                    'cancel_time' => Format::timestamp2milliseconds(Format::datetime2timestamp($found->cancel_time)),
                     'state' => $found->state
                 ]);
                 break;
@@ -300,7 +300,7 @@ class Application
                     // send response
                     $this->response->send([
                         'transaction' => $found->id,
-                        'cancel_time' => Format::datetime2timestamp($found->cancel_time),
+                        'cancel_time' => Format::timestamp2milliseconds(Format::datetime2timestamp($found->cancel_time)),
                         'state' => $found->state
                     ]);
                 } else {
